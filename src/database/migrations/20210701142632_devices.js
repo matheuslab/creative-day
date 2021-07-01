@@ -1,14 +1,15 @@
 
 exports.up = (knex) => {
   return knex.schema.createTable('devices', (table) => {
-      table.increments('id').primary();
+      table.string('id').primary();
       table.float('lat').notNullable();
       table.float('lng').notNullable();
-      table.string('hardwareModel').notNullable();
       table.decimal('speed').notNullable();
-      table.timestamp('updatedAt').defaultTo(knex.fn.now());
-      table.timestamp('createdAt').defaultTo(knex.fn.now());
-
+      table.string('driver_code').notNullable();
+      table.foreign('driver_code').references('driver_code').inTable('drivers').onUpdate("CASCADE");
+      table.index('driver_code', 'driver_code');
+      table.timestamp('updated_at').defaultTo(knex.fn.now());
+      table.timestamp('created_at').defaultTo(knex.fn.now());
   })
 };
 

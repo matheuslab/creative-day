@@ -10,7 +10,7 @@ module.exports = {
         .where('id', id)
         .first()
 
-        if(!data.id){
+        if(!data){
             return response.status(404).json({
                 error: 'No device found with this ID'
             })
@@ -20,14 +20,11 @@ module.exports = {
     },
 
     async fetchDevice(request, response){
-        const {page = 1} = request.query;
 
         const [count] = await connection('devices').count();
 
         const data = await connection('devices')
         .select('*')
-        .limit(5)
-        .offset((page -1) * 5);
 
         response.header('X-Total-Count', count['count(*)'])
 
@@ -35,21 +32,38 @@ module.exports = {
     },
 
     async create(request, response) {
-        const {lat, lng, hardwareModel, speed} = request.body;
+        const {lat, lng, speed, driver_code, id} = request.body;
 
-        const [id] = await connection('devices').insert({
-            lat,
-            lng,
-            hardwareModel,
-            speed
-        })
+        const device = await connection('devices')
+        .select('*')
+        .where('id', id)
+        .first()
+
+        if(device){
+            await connection('devices')
+            .where('id', id)
+            .update({
+                lat,
+                lng,
+                speed,
+                driver_code
+            })
+        } else {
+            await connection('devices').insert({
+                id,
+                lat,
+                lng,
+                speed,
+                driver_code
+            })
+        }
 
         return response.json({
             id,
             lat,
             lng,
-            hardwareModel,
-            speed
+            speed,
+            driver_code
         })
     }
 }
